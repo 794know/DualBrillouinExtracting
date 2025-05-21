@@ -15,7 +15,7 @@ from scipy.optimize import curve_fit
 import A_fiber_index as Afb
 import B_BGS_gene as Bgene
 import B_calculation as Bcalc
-from A_BasicSetting.B_BGS_gene import dual_lorentzian
+from B_BGS_gene import dual_lorentzian
 
 if __name__ == '__main__':
     Temp_set = np.linspace(1, 40, 40)
