@@ -36,3 +36,16 @@
 > git push origin main  
 
 ### Git忽略推送(大文件)
+
+新建.gitignore文件并编辑无需追踪的部分文件夹或者文件
+
+### 仓库文件拉取
+
+由新电脑拉取文件时：
+> cd ~/.ssh
+
+git bash 中输入：
+> ssh-keygen -t rsa -C "XXXX@XX.com"
+
+按路径进入 .ssh，里面存储的是两个 ssh key 的秘钥，id_rsa.pub 文件里面存储的是公钥，id_rsa 文件里存储的是私钥，不能告诉别人。打开 id_rsa.pub 文件，复制里面的内容。  
+接下需要登录到自己的 GitHub 上边添加这个密匙。  
