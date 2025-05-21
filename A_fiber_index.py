@@ -3,6 +3,7 @@
 # Version: 1.0
 # Date: 2025/04/21
 # This code is the basic information of FUT
+# 600 MHz
 
 import numpy as np
 
@@ -34,5 +35,5 @@ temperature_coefficient_Peak_2=2.0351e-3 # GHz/°C
 strain_coefficient_Peak_2=0.0493e-3 # GHz/ue
 
 #- Sweep range
-Sweep_v = np.linspace(10.650, 11.150, 400) # Simulation Sweep Range; GHz
+Sweep_v = np.linspace(10.651, 11.250, 600) # Simulation Sweep Range; GHz
 # print(Sweep_v.shape[0])
