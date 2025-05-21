@@ -46,8 +46,9 @@ if __name__ == '__main__':
     print('Dataset Shape:', f'{Generated_Dual_BGS.shape}')
     print('Label Shape:', f'{Label_Of_Dataset.shape}')
     # Load Pump Distribution
-    file_path_pump = 'distorted_pump_under_0.01-5_mW.npy'
-    Distorted_pump = np.load(file_path_pump)
+    file_dir = 'pump_data/'
+    file_name_pump = 'distorted_pump_under_0.01-5_mW.npy'
+    Distorted_pump = np.load(f'{file_dir}{file_name_pump}')
     print(Distorted_pump.shape)
 
     # Variable Statements
