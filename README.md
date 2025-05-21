@@ -49,3 +49,20 @@ git bash 中输入：
 
 按路径进入 .ssh，里面存储的是两个 ssh key 的秘钥，id_rsa.pub 文件里面存储的是公钥，id_rsa 文件里存储的是私钥，不能告诉别人。打开 id_rsa.pub 文件，复制里面的内容。  
 接下需要登录到自己的 GitHub 上边添加这个密匙。  
+
+### Git分支
+
+同时创建：仓库+分支：
+> git init -b <分支名>
+
+已有仓库，再创建分支：  
+> git branch <分支名>
+
+创建并切换到分支:
+> git checkout -b <分支名>
+
+分支重命名：
+> git branch -m <分支名> <分支名>
+
+分支删除：
+> git branch -d <分支名>
