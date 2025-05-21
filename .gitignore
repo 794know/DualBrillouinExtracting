@@ -1,3 +1,9 @@
-dataset_clean
 pump_data
 __pycache__
+dataset_clean
+dataset_SNR_0dB
+dataset_SNR_3dB
+dataset_SNR_6dB
+dataset_SNR_9dB
+dataset_SNR_12dB
+dataset_SNR_15dB
