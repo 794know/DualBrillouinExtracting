@@ -37,3 +37,7 @@ strain_coefficient_Peak_2=0.0493e-3 # GHz/ue
 #- Sweep range
 Sweep_v = np.linspace(10.651, 11.250, 600) # Simulation Sweep Range; GHz
 # print(Sweep_v.shape[0])
+
+#- SNR range (Training)
+SNR_range = np.linspace(6, 15, 4) # SNR range; dB
+# print(SNR_range)
