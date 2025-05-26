@@ -1,9 +1,9 @@
-# D_dataset_construct
+# C_1_pump_vs_sweeping.py
 # Author: QYH
 # Version: 1.0
-# Date: 2025/04/28
-# This code is used for the simulated dataset_clean of network:
-# Generation of dual-peaks BGS dataset_clean
+# Date: 2025/05/26
+# This code is used for the generation of pump distribution dataset_clean of network:
+# Generation of pump distribution dataset_clean
 # All the index can be modified in 'A_fiber_index.py'
 
 import os
