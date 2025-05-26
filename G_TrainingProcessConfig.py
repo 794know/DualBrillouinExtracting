@@ -6,7 +6,6 @@
 # curve dataset with dual channels and labels
 # All the index can be modified in 'A_fiber_index.py'
 
-import os
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -39,6 +38,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 # 训练模型
 num_epochs = 10
 for epoch in range(num_epochs):
+    print(f'训练开始，第{num_epochs + 1}轮次')
     model.train()
     running_loss = 0.0
     for batch_idx, (clean, distorted, label) in enumerate(train_loader):
@@ -50,7 +50,7 @@ for epoch in range(num_epochs):
         
         # 计算损失
         loss = criterion(output, label)
-        
+        print(f'目前loss：{loss}')
         # 反向传播和优化
         loss.backward()
         optimizer.step()

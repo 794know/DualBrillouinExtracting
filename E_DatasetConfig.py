@@ -8,7 +8,7 @@
 
 import os
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 import numpy as np
 
 class PumpPowerDataset(Dataset):
@@ -25,10 +25,18 @@ class PumpPowerDataset(Dataset):
         """
         samples = []
         for data_dir in self.data_dirs:
-            # 加载数据文件
-            clean_path = os.path.join(data_dir, "Dataset_Pumppower_index_0_SNR_Clean.npy")
+            # 动态选择文件名
+            if "SNR" in os.path.basename(data_dir):
+                clean_path = os.path.join(data_dir, f"Dataset_Pumppower_index_0_SNR_{os.path.basename(data_dir).split('_')[-1]}.npy")
+            else:
+                clean_path = os.path.join(data_dir, "Dataset_Pumppower_index_0_SNR_Clean.npy")
+            
             distorted_path = os.path.join(data_dir, "Pump_Power_index_0.npy")
             label_path = os.path.join(data_dir, "Label_Pumppower_index_0_SNR_Clean.npy")
+            
+            # 检查文件是否存在
+            if not os.path.exists(clean_path) or not os.path.exists(distorted_path) or not os.path.exists(label_path):
+                raise FileNotFoundError(f"文件缺失: {clean_path}, {distorted_path}, {label_path}")
             
             # 加载数据
             clean_data = np.load(clean_path).T  # 转置为 [132300, 600]
