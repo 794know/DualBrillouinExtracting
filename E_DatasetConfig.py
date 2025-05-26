@@ -11,6 +11,17 @@ import torch
 from torch.utils.data import Dataset
 import numpy as np
 
+# Normalize the data to ensure each sample is scaled correctly
+def normalize_data(data):
+    """
+    对每个样本数据进行归一化，使其除以自身的最大值。
+    如果数据的最大值为0，则保持原样（避免除以0）。
+    """
+    max_values = np.max(data, axis=1, keepdims=True)
+    max_values[max_values == 0] = 1
+    normalized_data = data / max_values
+    return normalized_data
+
 class PumpPowerDataset(Dataset):
     def __init__(self, data_dirs):
         """
@@ -18,6 +29,7 @@ class PumpPowerDataset(Dataset):
         """
         self.data_dirs = data_dirs
         self.samples = self._load_samples()
+        self._print_labels()  # 打印前几个 label 样本
 
     def _load_samples(self):
         """
@@ -43,6 +55,11 @@ class PumpPowerDataset(Dataset):
             distorted_data = np.load(distorted_path).T  # 转置为 [132300, 600]
             labels = np.load(label_path).T  # 转置为 [132300, 2]
             
+            # 对每个数据进行归一化
+            clean_data = normalize_data(clean_data)
+            distorted_data = normalize_data(distorted_data)
+            labels = normalize_data(labels)
+
             # 确保数据长度一致
             min_length = min(len(clean_data), len(distorted_data), len(labels))
             clean_data = clean_data[:min_length]
@@ -54,6 +71,14 @@ class PumpPowerDataset(Dataset):
                 samples.append((clean_data[i], distorted_data[i], labels[i]))
         
         return samples
+    
+    def _print_labels(self):
+        """
+        打印前几个 label 样本
+        """
+        print("First few label samples:")
+        for i in range(min(10, len(self.samples))):  # 打印前10个样本
+            print(f"Sample {i+1}: {self.samples[i][2]}")
 
     def __len__(self):
         return len(self.samples)
