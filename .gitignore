@@ -5,3 +5,6 @@ dataset_SNR_6.0dB
 dataset_SNR_9.0dB
 dataset_SNR_12.0dB
 dataset_SNR_15.0dB
+
+model.pth
+*.png
