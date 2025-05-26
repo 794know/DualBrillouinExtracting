@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import A_fiber_index as Afb
 
 if __name__ == '__main__':
-
+    
     # Pumppower index
     pumppower_index = 0
     # SNR index
@@ -55,22 +55,27 @@ if __name__ == '__main__':
     # 保存添加噪声后的数据
     output_file = f'dataset_SNR_{snr_range[snr_index]}dB\Dataset_Pumppower_index_{pumppower_index}_SNR_{snr_range[snr_index]}dB.npy'
     np.save(output_file, noisy_dataset)
-
     print(f"添加噪声后的数据已保存到 {output_file}")
-    
-    
+
     # 绘制添加噪声后的数据的 Y-Z 图
-    fixed_x = 62000  # 选择第 10 列（索引从 0 开始）
-    noisy_dataset = np.load(output_file)
+    fixed_x = 62000  # 选择第 x 列
+
+    # noisy_dataset = np.load(output_file)
+    noisy_dataset = np.load(r'dataset_SNR_6.0dB\Dataset_Pumppower_index_0_SNR_6.0dB.npy')
+
     dataset = np.load(r'dataset_clean\Dataset_Pumppower_index_0_SNR_Clean.npy')
     dataset_yz = noisy_dataset[:, fixed_x]
     label_yz = dataset[:, fixed_x]
+
     plt.figure(figsize=(10, 6))
-    plt.plot(dataset_yz, label=f'Dataset (X={fixed_x})')
-    plt.plot(label_yz, 'ro-', label=f'Label (X={fixed_x})')
-    plt.title('Dataset_Pumppower_index_0_SNR_3dB Y-Z Plane')
+    plt.plot(dataset_yz, label=f'Noisy BGS(location={fixed_x})')
+    plt.plot(label_yz, 'ro-', label=f'Original BGS(location={fixed_x})', markersize=1.5)
+    plt.title('Dataset_Pumppower_index_0_SNR_6.0dB Y-Z Plane')
     plt.xlabel('Y')
     plt.ylabel('Z')
     plt.legend()
     plt.grid(True)
-    plt.show()
+    # plt.show()
+    # 设置保存的PPI
+    plt.savefig('output_6dB.png', dpi=300)  # 设置为300 PPI
+    print("图片已保存，PPI设置为 300")

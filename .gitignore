@@ -1,7 +1,6 @@
 pump_data
 __pycache__
 dataset_clean
-
 dataset_SNR_6.0dB
 dataset_SNR_9.0dB
 dataset_SNR_12.0dB
