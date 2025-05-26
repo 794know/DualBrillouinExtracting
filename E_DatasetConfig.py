@@ -17,6 +17,7 @@ def normalize_data(data):
     对每个样本数据进行归一化，使其除以自身的最大值。
     如果数据的最大值为0，则保持原样（避免除以0）。
     """
+    # 每一行的最大值
     max_values = np.max(data, axis=1, keepdims=True)
     max_values[max_values == 0] = 1
     normalized_data = data / max_values

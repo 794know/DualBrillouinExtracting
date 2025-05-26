@@ -9,6 +9,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchsummary import summary
 
 class DualChannelCNN(nn.Module):
     def __init__(self):
@@ -47,3 +48,15 @@ class DualChannelCNN(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
+# This code is used for defining a dual-channel CNN model for training:
+if __name__ == "__main__":
+    # 创建模型实例
+    model = DualChannelCNN()
+    
+    # 打印模型结构
+    print(model)
+    
+    # 使用 torchsummary 打印详细结构
+    # 假设输入数据的形状为 [batch_size, 1, 600]
+    summary(model, [(1, 600), (1, 600)])
