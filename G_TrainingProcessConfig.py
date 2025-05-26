@@ -10,14 +10,20 @@ import os
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from E_DatasetConfig import CurveDataset
 from F_DualChannelCNN import DualChannelCNN
+from E_DatasetConfig import PumpPowerDataset
 
-# 数据集路径
-data_dir = "path_to_your_data_folder"
+# 数据集路径列表
+data_dirs = [
+    "dataset_clean",
+    "dataset_SNR_6.0dB",
+    "dataset_SNR_9.0dB",
+    "dataset_SNR_12.0dB",
+    "dataset_SNR_15.0dB"
+]
 
 # 创建数据集实例
-dataset = CurveDataset(data_dir)
+dataset = PumpPowerDataset(data_dirs)
 
 # 创建数据加载器
 batch_size = 32
@@ -35,12 +41,12 @@ num_epochs = 10
 for epoch in range(num_epochs):
     model.train()
     running_loss = 0.0
-    for batch_idx, (channel1, channel2, label) in enumerate(train_loader):
+    for batch_idx, (clean, distorted, label) in enumerate(train_loader):
         # 清除梯度
         optimizer.zero_grad()
         
         # 前向传播
-        output = model(channel1, channel2)
+        output = model(clean, distorted)
         
         # 计算损失
         loss = criterion(output, label)
@@ -55,3 +61,5 @@ for epoch in range(num_epochs):
 
 # 保存模型
 torch.save(model.state_dict(), "model.pth")
+# 输出训练完成信息
+print("Training completed and model saved as 'model.pth'.")

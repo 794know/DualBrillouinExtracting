@@ -24,7 +24,7 @@ class DualChannelCNN(nn.Module):
         self.pool2 = nn.MaxPool1d(kernel_size=2, stride=2)
         
         # 合并后的全连接层
-        self.fc1 = nn.Linear(32 * 150 * 2, 128)  # 假设经过池化后长度变为150
+        self.fc1 = nn.Linear(32 * 300 * 2, 128)  # 假设经过池化后长度变为300
         self.fc2 = nn.Linear(128, 64)
         self.fc3 = nn.Linear(64, 2)  # 输出温度和应力值
 
@@ -47,16 +47,3 @@ class DualChannelCNN(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
-
-# 测试代码
-if __name__ == "__main__":
-    # 创建模型实例
-    model = DualChannelCNN()
-    
-    # 创建两个输入张量，假设输入曲线长度为600
-    input1 = torch.randn(1, 1, 600)  # 第一个通道的输入
-    input2 = torch.randn(1, 1, 600)  # 第二个通道的输入
-    
-    # 前向传播
-    output = model(input1, input2)
-    print(output.shape)  # 输出形状，例如：torch.Size([1, 2])

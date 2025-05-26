@@ -11,47 +11,52 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 
-class CurveDataset(Dataset):
-    def __init__(self, data_dir, transform=None):
+class PumpPowerDataset(Dataset):
+    def __init__(self, data_dirs):
         """
-        data_dir: 包含数据的文件夹路径
-        transform: 数据预处理操作
+        data_dirs: 包含多个数据文件夹路径的列表
         """
-        self.data_dir = data_dir
-        self.transform = transform
+        self.data_dirs = data_dirs
         self.samples = self._load_samples()
 
     def _load_samples(self):
         """
-        加载数据文件路径
+        从多个文件夹中加载数据文件路径
         """
         samples = []
-        for file_name in os.listdir(self.data_dir):
-            if file_name.endswith("_channel1.txt"):
-                channel1_path = os.path.join(self.data_dir, file_name)
-                channel2_path = channel1_path.replace("_channel1.txt", "_channel2.txt")
-                label_path = channel1_path.replace("_channel1.txt", "_label.txt")
-                samples.append((channel1_path, channel2_path, label_path))
+        for data_dir in self.data_dirs:
+            # 加载数据文件
+            clean_path = os.path.join(data_dir, "Dataset_Pumppower_index_0_SNR_Clean.npy")
+            distorted_path = os.path.join(data_dir, "Pump_Power_index_0.npy")
+            label_path = os.path.join(data_dir, "Label_Pumppower_index_0_SNR_Clean.npy")
+            
+            # 加载数据
+            clean_data = np.load(clean_path).T  # 转置为 [132300, 600]
+            distorted_data = np.load(distorted_path).T  # 转置为 [132300, 600]
+            labels = np.load(label_path).T  # 转置为 [132300, 2]
+            
+            # 确保数据长度一致
+            min_length = min(len(clean_data), len(distorted_data), len(labels))
+            clean_data = clean_data[:min_length]
+            distorted_data = distorted_data[:min_length]
+            labels = labels[:min_length]
+            
+            # 将数据添加到样本列表
+            for i in range(min_length):
+                samples.append((clean_data[i], distorted_data[i], labels[i]))
+        
         return samples
 
     def __len__(self):
         return len(self.samples)
 
     def __getitem__(self, idx):
-        channel1_path, channel2_path, label_path = self.samples[idx]
-
-        # 加载数据
-        channel1 = np.loadtxt(channel1_path)
-        channel2 = np.loadtxt(channel2_path)
-        label = np.loadtxt(label_path)
+        clean, distorted, label = self.samples[idx]
 
         # 转换为Tensor
-        channel1 = torch.tensor(channel1, dtype=torch.float32).unsqueeze(0)  # 添加通道维度
-        channel2 = torch.tensor(channel2, dtype=torch.float32).unsqueeze(0)
+        clean = torch.tensor(clean, dtype=torch.float32).unsqueeze(0)  # 添加通道维度
+        distorted = torch.tensor(distorted, dtype=torch.float32).unsqueeze(0)
         label = torch.tensor(label, dtype=torch.float32)
 
-        if self.transform:
-            channel1 = self.transform(channel1)
-            channel2 = self.transform(channel2)
-
-        return channel1, channel2, label
+        return clean, distorted, label
+    
