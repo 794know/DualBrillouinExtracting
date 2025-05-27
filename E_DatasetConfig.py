@@ -23,6 +23,18 @@ def normalize_data(data):
     normalized_data = data / max_values
     return normalized_data
 
+def normalize_labels(labels):
+    """
+    对标签数据进行归一化，使其除以自身的最大值。
+    如果数据的最大值为0，则保持原样（避免除以0）。
+    """
+    # 每一列的最大值
+    max_values = np.max(labels, axis=0, keepdims=True)
+    max_values[max_values == 0] = 1
+    normalized_labels = labels / max_values
+    return normalized_labels
+
+
 class PumpPowerDataset(Dataset):
     def __init__(self, data_dirs):
         """
@@ -59,7 +71,7 @@ class PumpPowerDataset(Dataset):
             # 对每个数据进行归一化
             clean_data = normalize_data(clean_data)
             distorted_data = normalize_data(distorted_data)
-            labels = normalize_data(labels)
+            labels = normalize_labels(labels)
 
             # 确保数据长度一致
             min_length = min(len(clean_data), len(distorted_data), len(labels))
