@@ -66,7 +66,7 @@ val_loss2_values = []
 input("Press Enter to start training...")
 
 # 训练模型
-num_epochs = 10
+num_epochs = 30
 total_start_time = time.time()  # 记录总训练时间的开始
 print(f"Starting training for {num_epochs} epochs...")
 for epoch in range(num_epochs):

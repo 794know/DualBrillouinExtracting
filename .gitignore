@@ -8,3 +8,5 @@ dataset_SNR_15.0dB
 
 model.pth
 *.png
+
+.conda
