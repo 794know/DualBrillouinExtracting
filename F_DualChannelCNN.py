@@ -1,7 +1,7 @@
 # F_DualChannelCNN.py
 # Author: QYH
-# Version: 1.0
-# Date: 2025/05/26
+# Version: 1.1
+# Date: 2025/05/27
 # This code is used for defining a dual-channel CNN model for training:
 # Model for processing dual-channel data (e.g., temperature and strain curves)
 # All the index can be modified in 'A_fiber_index.py'
@@ -14,39 +14,54 @@ from torchsummary import summary
 class DualChannelCNN(nn.Module):
     def __init__(self):
         super(DualChannelCNN, self).__init__()
-        # 第一个通道的卷积层
-        self.conv1_1 = nn.Conv1d(1, 16, kernel_size=3, stride=1, padding=1)
-        self.conv1_2 = nn.Conv1d(16, 32, kernel_size=3, stride=1, padding=1)
-        self.pool1 = nn.MaxPool1d(kernel_size=2, stride=2)
         
-        # 第二个通道的卷积层
-        self.conv2_1 = nn.Conv1d(1, 16, kernel_size=3, stride=1, padding=1)
-        self.conv2_2 = nn.Conv1d(16, 32, kernel_size=3, stride=1, padding=1)
-        self.pool2 = nn.MaxPool1d(kernel_size=2, stride=2)
+        # 通道1的卷积层
+        self.conv1_channel1 = nn.Conv1d(1, 16, kernel_size=3, padding=1)
+        self.bn1_channel1 = nn.BatchNorm1d(16)
+        self.pool1_channel1 = nn.MaxPool1d(kernel_size=2)
         
-        # 合并后的全连接层
-        self.fc1 = nn.Linear(32 * 300 * 2, 128)  # 假设经过池化后长度变为300
-        self.fc2 = nn.Linear(128, 64)
-        self.fc3 = nn.Linear(64, 2)  # 输出温度和应力值
+        self.conv2_channel1 = nn.Conv1d(16, 32, kernel_size=3, padding=1)
+        self.bn2_channel1 = nn.BatchNorm1d(32)
+        self.pool2_channel1 = nn.MaxPool1d(kernel_size=2)
+        
+        # 通道2的卷积层
+        self.conv1_channel2 = nn.Conv1d(1, 16, kernel_size=3, padding=1)
+        self.bn1_channel2 = nn.BatchNorm1d(16)
+        self.pool1_channel2 = nn.MaxPool1d(kernel_size=2)
+        
+        self.conv2_channel2 = nn.Conv1d(16, 32, kernel_size=3, padding=1)
+        self.bn2_channel2 = nn.BatchNorm1d(32)
+        self.pool2_channel2 = nn.MaxPool1d(kernel_size=2)
+        
+        # 计算全连接层输入维度
+        flattened_size = 32 * 150  # 600 -> 300 -> 150 after pooling
+        
+        # 共享全连接层
+        self.fc1 = nn.Linear(flattened_size * 2, 128)
+        self.bn_fc = nn.BatchNorm1d(128)
+        self.dropout = nn.Dropout(0.5)
+        self.fc2 = nn.Linear(128, 2)  # 输出2个标量
 
     def forward(self, x1, x2):
-        # 第一个通道的前向传播
-        x1 = F.relu(self.conv1_1(x1))
-        x1 = self.pool1(F.relu(self.conv1_2(x1)))
+        # 通道1的特征提取
+        x1 = self.pool1_channel1(F.relu(self.bn1_channel1(self.conv1_channel1(x1))))
+        x1 = self.pool2_channel1(F.relu(self.bn2_channel1(self.conv2_channel1(x1))))
         
-        # 第二个通道的前向传播
-        x2 = F.relu(self.conv2_1(x2))
-        x2 = self.pool2(F.relu(self.conv2_2(x2)))
+        # 通道2的特征提取
+        x2 = self.pool1_channel2(F.relu(self.bn1_channel2(self.conv1_channel2(x2))))
+        x2 = self.pool2_channel2(F.relu(self.bn2_channel2(self.conv2_channel2(x2))))
         
-        # 将两个通道的特征合并
-        x1 = x1.view(x1.size(0), -1)  # 展平
-        x2 = x2.view(x2.size(0), -1)  # 展平
-        x = torch.cat((x1, x2), dim=1)  # 按维度1拼接
+        # 展平特征
+        x1 = x1.view(x1.size(0), -1)
+        x2 = x2.view(x2.size(0), -1)
         
-        # 全连接层
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        # 拼接双通道特征
+        x = torch.cat([x1, x2], dim=1)
+        
+        # 共享全连接层
+        x = self.dropout(F.relu(self.bn_fc(self.fc1(x))))
+        x = self.fc2(x)
+        
         return x
 
 # This code is used for defining a dual-channel CNN model for training:

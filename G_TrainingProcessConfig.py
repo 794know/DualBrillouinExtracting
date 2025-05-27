@@ -1,7 +1,7 @@
 # G_TrainingProcessConfig.py
 # Author: QYH
-# Version: 1.0
-# Date: 2025/05/26
+# Version: 1.1
+# Date: 2025/05/27
 # This code is used for training the dual-channel CNN model:
 # curve dataset with dual channels and labels
 # All the index can be modified in 'A_fiber_index.py'
@@ -66,7 +66,12 @@ val_loss2_values = []
 input("Press Enter to start training...")
 
 # 训练模型
-num_epochs = 30
+num_epochs = 100  # 设置训练轮数
+
+target_loss1 = 0.005  # 设置目标损失值1
+target_loss2 = 0.005  # 设置目标损失值2
+target_loss_total = 0.01  # 设置目标总损失值
+
 total_start_time = time.time()  # 记录总训练时间的开始
 print(f"Starting training for {num_epochs} epochs...")
 for epoch in range(num_epochs):
@@ -114,7 +119,7 @@ for epoch in range(num_epochs):
     train_losses.append(avg_train_loss)
     train_loss1_values.append(avg_train_loss1)
     train_loss2_values.append(avg_train_loss2)
-    
+
     # 验证阶段
     model.eval()
     running_val_loss = 0.0
@@ -142,6 +147,11 @@ for epoch in range(num_epochs):
     epoch_duration = epoch_end_time - epoch_start_time  # 计算当前 epoch 的持续时间
     print(f"Epoch [{epoch+1}/{num_epochs}], Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}, Time: {epoch_duration:.2f}s")
 
+    if avg_val_loss <= target_loss_total:
+        print(f'Reached target loss of {target_loss_total} at epoch {epoch+1}')
+        break
+
+
 total_end_time = time.time()  # 记录总训练时间的结束
 total_duration = total_end_time - total_start_time  # 计算总训练时间
 print(f"Total training time: {total_duration:.2f}s")
@@ -166,7 +176,7 @@ print(f"Test Loss: {avg_test_loss:.4f}")
 
 # 可视化损失曲线并保存为图像文件
 plt.figure(figsize=(12, 6))
-plt.subplot(1, 2, 1)
+plt.subplot(1, 3, 1)
 plt.plot(train_loss1_values, label='Train Loss1')
 plt.plot(val_loss1_values, label='Val Loss1')
 plt.xlabel('Epoch')
@@ -174,13 +184,22 @@ plt.ylabel('Loss')
 plt.title('Loss1 Over Epochs')
 plt.legend()
 
-plt.subplot(1, 2, 2)
+plt.subplot(1, 3, 2)
 plt.plot(train_loss2_values, label='Train Loss2')
 plt.plot(val_loss2_values, label='Val Loss2')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.title('Loss2 Over Epochs')
 plt.legend()
+
+plt.subplot(1, 3, 3)
+plt.plot(train_losses, label='Train Loss Total')
+plt.plot(val_losses, label='Val Loss Total')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.title('Loss Total Over Epochs')
+plt.legend()
+
 
 plt.tight_layout()
 plt.savefig("losses_over_epochs.png")  # 保存为图像文件
