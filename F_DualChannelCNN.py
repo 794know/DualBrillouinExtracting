@@ -11,41 +11,64 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchsummary import summary
 
+class ChannelAttention(nn.Module):
+    def __init__(self, num_channels, reduction_ratio=16):
+        super(ChannelAttention, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool1d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(num_channels, num_channels // reduction_ratio, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(num_channels // reduction_ratio, num_channels, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        b, c, _ = x.size()
+        y = self.avg_pool(x).view(b, c)
+        y = self.fc(y).view(b, c, 1)
+        return x * y.expand_as(x)
+
 class DualChannelCNN(nn.Module):
     def __init__(self):
         super(DualChannelCNN, self).__init__()
         
         # 通道1的卷积层
-        self.conv1_channel1 = nn.Conv1d(1, 16, kernel_size=3, padding=1)
-        self.bn1_channel1 = nn.BatchNorm1d(16)
+        self.conv1_channel1 = nn.Conv1d(1, 8, kernel_size=3, padding=1)
+        self.bn1_channel1 = nn.BatchNorm1d(8)
         self.pool1_channel1 = nn.MaxPool1d(kernel_size=2)
         
-        self.conv2_channel1 = nn.Conv1d(16, 32, kernel_size=3, padding=1)
-        self.bn2_channel1 = nn.BatchNorm1d(32)
+        self.conv2_channel1 = nn.Conv1d(8, 16, kernel_size=3, padding=1)
+        self.bn2_channel1 = nn.BatchNorm1d(16)
         self.pool2_channel1 = nn.MaxPool1d(kernel_size=2)
         
+        # 通道1的注意力机制
+        self.attention_channel1 = ChannelAttention(num_channels=16)
+        
         # 通道2的卷积层
-        self.conv1_channel2 = nn.Conv1d(1, 16, kernel_size=3, padding=1)
-        self.bn1_channel2 = nn.BatchNorm1d(16)
+        self.conv1_channel2 = nn.Conv1d(1, 8, kernel_size=3, padding=1)
+        self.bn1_channel2 = nn.BatchNorm1d(8)
         self.pool1_channel2 = nn.MaxPool1d(kernel_size=2)
         
-        self.conv2_channel2 = nn.Conv1d(16, 32, kernel_size=3, padding=1)
-        self.bn2_channel2 = nn.BatchNorm1d(32)
+        self.conv2_channel2 = nn.Conv1d(8, 16, kernel_size=3, padding=1)
+        self.bn2_channel2 = nn.BatchNorm1d(16)
         self.pool2_channel2 = nn.MaxPool1d(kernel_size=2)
         
         # 计算全连接层输入维度
-        flattened_size = 32 * 150  # 600 -> 300 -> 150 after pooling
+        flattened_size = 16 * 150  # 输入长度为600，经过两次池化后变为150，再乘以通道数16
         
         # 共享全连接层
-        self.fc1 = nn.Linear(flattened_size * 2, 128)
-        self.bn_fc = nn.BatchNorm1d(128)
+        self.fc1 = nn.Linear(flattened_size * 2, 64)
+        self.bn_fc = nn.BatchNorm1d(64)
         self.dropout = nn.Dropout(0.5)
-        self.fc2 = nn.Linear(128, 2)  # 输出2个标量
+        self.fc2 = nn.Linear(64, 2)  # 输出2个标量
 
     def forward(self, x1, x2):
         # 通道1的特征提取
         x1 = self.pool1_channel1(F.relu(self.bn1_channel1(self.conv1_channel1(x1))))
         x1 = self.pool2_channel1(F.relu(self.bn2_channel1(self.conv2_channel1(x1))))
+        
+        # 应用注意力机制
+        x1 = self.attention_channel1(x1)
         
         # 通道2的特征提取
         x2 = self.pool1_channel2(F.relu(self.bn1_channel2(self.conv1_channel2(x2))))

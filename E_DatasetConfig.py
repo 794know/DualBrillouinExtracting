@@ -1,7 +1,7 @@
 # E_DatasetConfig.py
 # Author: QYH
-# Version: 1.0
-# Date: 2025/05/26
+# Version: 1.1
+# Date: 2025/05/29
 # This code is used for loading the dual-channel dataset for training:
 # curve dataset with dual channels and labels
 # All the index can be modified in 'A_fiber_index.py'
@@ -23,9 +23,27 @@ def normalize_data(data):
     normalized_data = data / max_values
     return normalized_data
 
+def normalize_data_c2(data):
+    """
+    对每个pumpdata进行归一化，使其整个pump集的最大值。
+    如果数据的最大值为0，则保持原样（避免除以0）。
+    适用于双通道数据，返回两个通道的归一化结果。
+    """
+    # 找到整个 data 中的最大值
+    max_value = np.max(data, axis=None)  # axis=None 表示对整个数组操作
+
+    # 如果最大值为 0，将其设置为 1，避免除以 0
+    if max_value == 0:
+        max_value = 1
+
+    # 归一化数据
+    normalized_data = data / max_value
+
+    return normalized_data
+
 def normalize_labels(labels):
     """
-    对标签数据进行归一化，使其除以自身的最大值。
+    对标签数据进行归一化，使其除以该label列的最大值。
     如果数据的最大值为0，则保持原样（避免除以0）。
     """
     # 每一列的最大值
@@ -70,8 +88,7 @@ class PumpPowerDataset(Dataset):
             
             # 对每个数据进行归一化
             clean_data = normalize_data(clean_data)
-            distorted_data = normalize_data(distorted_data)
-            labels = normalize_labels(labels)
+            distorted_data = normalize_data_c2(distorted_data)
 
             # 确保数据长度一致
             min_length = min(len(clean_data), len(distorted_data), len(labels))

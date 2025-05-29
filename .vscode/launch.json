@@ -1,0 +1,30 @@
+{
+  "configurations": [
+    {
+      "type": "debugpy",
+      "request": "launch",
+      "name": "Launch Python Script",
+      "program": "${workspaceFolder}/${input:pythonFile}"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "pythonFile",
+      "type": "pickString",
+      "description": "Select the Python file to debug",
+      "options": [
+        "A_fiber_index.py",
+        "B_BGS_gene.py",
+        "B_calculation.py",
+        "C_1_pump_vs_sweeping.py",
+        "C_2_pump_adding_to_dataset.py",
+        "C_simu_extraction.py",
+        "D_construct_BGS.py",
+        "D_noise_add.py",
+        "E_DatasetConfig.py",
+        "F_DualChannelCNN.py",
+        "G_TrainingProcessConfig.py"
+      ]
+    }
+  ]
+}
