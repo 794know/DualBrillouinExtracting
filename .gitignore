@@ -10,3 +10,5 @@ model.pth
 *.png
 
 .conda
+
+runs

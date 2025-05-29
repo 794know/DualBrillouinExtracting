@@ -6,7 +6,6 @@
 # curve dataset with dual channels and labels
 # All the index can be modified in 'A_fiber_index.py'
 
-import os
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
@@ -19,12 +18,15 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import time  # 导入时间模块
 
+
 if __name__ == "__main__":
     
-    print("This script is not intended to be run directly. Please import it as a module.")
+    print("This script is intended to be run directly.")
     # 检查 GPU 是否可用
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
+
+    writer = SummaryWriter(log_dir='runs/dual_channel_experiment')  # 新增
 
     # 数据集路径列表
     data_dirs = [
@@ -46,7 +48,7 @@ if __name__ == "__main__":
     train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
 
     # 创建数据加载器
-    batch_size = 32
+    batch_size = 256
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
@@ -122,6 +124,10 @@ if __name__ == "__main__":
         avg_train_loss = running_train_loss / len(train_loader)
         avg_train_loss1 = running_train_loss1 / len(train_loader)
         avg_train_loss2 = running_train_loss2 / len(train_loader)
+        # 记录训练损失到TensorBoard
+        writer.add_scalar('Loss/train_total', avg_train_loss, epoch)
+        writer.add_scalar('Loss/train_loss1', avg_train_loss1, epoch)
+        writer.add_scalar('Loss/train_loss2', avg_train_loss2, epoch)
         train_losses.append(avg_train_loss)
         train_loss1_values.append(avg_train_loss1)
         train_loss2_values.append(avg_train_loss2)
@@ -147,6 +153,10 @@ if __name__ == "__main__":
         avg_val_loss = running_val_loss / len(val_loader)
         avg_val_loss1 = running_val_loss1 / len(val_loader)
         avg_val_loss2 = running_val_loss2 / len(val_loader)
+        # 记录验证损失到TensorBoard
+        writer.add_scalar('Loss/val_total', avg_val_loss, epoch)
+        writer.add_scalar('Loss/val_loss1', avg_val_loss1, epoch)
+        writer.add_scalar('Loss/val_loss2', avg_val_loss2, epoch)
         val_losses.append(avg_val_loss)
         val_loss1_values.append(avg_val_loss1)
         val_loss2_values.append(avg_val_loss2)
@@ -159,6 +169,8 @@ if __name__ == "__main__":
             print(f'Reached target loss of {target_loss_total} at epoch {epoch+1}')
             break
 
+    # tensorboard writer 关闭
+    writer.close()
 
     total_end_time = time.time()  # 记录总训练时间的结束
     total_duration = total_end_time - total_start_time  # 计算总训练时间

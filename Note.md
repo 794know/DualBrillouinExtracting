@@ -206,7 +206,7 @@ Estimated Total Size (MB): 6.81
 
 ### model试训5
 
-对应commit：
+对应commit：20250529_1645_commit
 
 #### 待办5
 
@@ -214,3 +214,5 @@ Estimated Total Size (MB): 6.81
 2. Loss函数修改，loss_total计算更新。针对应变loss 0.06级别水准仍需调整权重或者更新label训练方法
 3. 网络结构瘦身
 4. 测试训练完成的代码
+
+修改了batchsize为256
