@@ -189,7 +189,7 @@ Estimated Total Size (MB): 6.81
 
 ## 20250528
 
-### model试训4 ×
+### model试训4 x
 
 对应commit：
 
@@ -204,7 +204,7 @@ Estimated Total Size (MB): 6.81
 
 ## 20250529
 
-### model试训5
+### model试训5 x
 
 对应commit：20250529_1645_commit
 
@@ -216,3 +216,104 @@ Estimated Total Size (MB): 6.81
 4. 测试训练完成的代码
 
 修改了batchsize为256
+
+## 20250603
+
+### model试训6
+
+对应commit：
+
+#### 待办6
+
+1. 添加全连接层drop out，正则化，提升模型在验证集上的表现
+2. 为通道1添加残差块？
+3. 增加全连接层的层数，添加drop out机制
+
+#### 网络结构更新6
+
+为通道1加入了残差块（通道1）
+将全连接层增加至了3层
+
+DualChannelCNN(
+  (conv1_channel1): Conv1d(1, 8, kernel_size=(3,), stride=(1,), padding=(1,))  
+  (bn1_channel1): BatchNorm1d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)  
+  (pool1_channel1): MaxPool1d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)  
+  (conv2_channel1): Conv1d(8, 16, kernel_size=(3,), stride=(1,), padding=(1,))  
+  (bn2_channel1): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)  
+  (pool2_channel1): MaxPool1d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)  
+  (resblock_channel1): ResidualBlock1D(  
+    (conv1): Conv1d(16, 16, kernel_size=(3,), stride=(1,), padding=(1,))  
+    (bn1): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)  
+    (relu): ReLU(inplace=True)  
+    (conv2): Conv1d(16, 16, kernel_size=(3,), stride=(1,), padding=(1,))  
+    (bn2): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)  
+  )  
+  (attention_channel1): ChannelAttention(  
+    (avg_pool): AdaptiveAvgPool1d(output_size=1)  
+    (fc): Sequential(  
+      (0): Linear(in_features=16, out_features=1, bias=False)  
+      (1): ReLU(inplace=True)  
+      (2): Linear(in_features=1, out_features=16, bias=False)  
+      (3): Sigmoid()  
+    )  
+  )  
+  (conv1_channel2): Conv1d(1, 8, kernel_size=(3,), stride=(1,), padding=(1,))  
+  (bn1_channel2): BatchNorm1d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)  
+  (pool1_channel2): MaxPool1d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)  
+  (conv2_channel2): Conv1d(8, 16, kernel_size=(3,), stride=(1,), padding=(1,))  
+  (bn2_channel2): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)  
+  (pool2_channel2): MaxPool1d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)  
+  (fc1): Linear(in_features=4800, out_features=128, bias=True)  
+  (bn_fc1): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)  
+  (dropout1): Dropout(p=0.5, inplace=False)  
+  (fc2): Linear(in_features=128, out_features=64, bias=True)  
+  (bn_fc2): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)  
+  (dropout2): Dropout(p=0.5, inplace=False)  
+  (fc3): Linear(in_features=64, out_features=2, bias=True)  
+)  
+
+| Layer (type)           | Output Shape      | Param #   |
+|------------------------|------------------|-----------|
+| Conv1d-1               | [-1, 8, 600]     | 32        |
+| BatchNorm1d-2          | [-1, 8, 600]     | 16        |
+| MaxPool1d-3            | [-1, 8, 300]     | 0         |
+| Conv1d-4               | [-1, 16, 300]    | 400       |
+| BatchNorm1d-5          | [-1, 16, 300]    | 32        |
+| MaxPool1d-6            | [-1, 16, 150]    | 0         |
+| Conv1d-7               | [-1, 16, 150]    | 784       |
+| BatchNorm1d-8          | [-1, 16, 150]    | 32        |
+| ReLU-9                 | [-1, 16, 150]    | 0         |
+| Conv1d-10              | [-1, 16, 150]    | 784       |
+| BatchNorm1d-11         | [-1, 16, 150]    | 32        |
+| ReLU-12                | [-1, 16, 150]    | 0         |
+| ResidualBlock1D-13     | [-1, 16, 150]    | 0         |
+| AdaptiveAvgPool1d-14   | [-1, 16, 1]      | 0         |
+| Linear-15              | [-1, 1]          | 16        |
+| ReLU-16                | [-1, 1]          | 0         |
+| Linear-17              | [-1, 16]         | 16        |
+| Sigmoid-18             | [-1, 16]         | 0         |
+| ChannelAttention-19    | [-1, 16, 150]    | 0         |
+| Conv1d-20              | [-1, 8, 600]     | 32        |
+| BatchNorm1d-21         | [-1, 8, 600]     | 16        |
+| MaxPool1d-22           | [-1, 8, 300]     | 0         |
+| Conv1d-23              | [-1, 16, 300]    | 400       |
+| BatchNorm1d-24         | [-1, 16, 300]    | 32        |
+| MaxPool1d-25           | [-1, 16, 150]    | 0         |
+| Linear-26              | [-1, 128]        | 614,528   |
+| BatchNorm1d-27         | [-1, 128]        | 256       |
+| Dropout-28             | [-1, 128]        | 0         |
+| Linear-29              | [-1, 64]         | 8,256     |
+| BatchNorm1d-30         | [-1, 64]         | 128       |
+| Dropout-31             | [-1, 64]         | 0         |
+| Linear-32              | [-1, 2]          | 130       |
+
+Total params: 625,922
+Total params: 625,922
+Trainable params: 625,922
+Non-trainable params: 0
+
+Input size (MB): 1.37
+Forward/backward pass size (MB): 0.52
+Forward/backward pass size (MB): 0.52
+Params size (MB): 2.39
+Estimated Total Size (MB): 4.28

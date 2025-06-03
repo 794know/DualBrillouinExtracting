@@ -28,6 +28,23 @@ class ChannelAttention(nn.Module):
         y = self.fc(y).view(b, c, 1)
         return x * y.expand_as(x)
 
+class ResidualBlock1D(nn.Module):
+    def __init__(self, channels):
+        super(ResidualBlock1D, self).__init__()
+        self.conv1 = nn.Conv1d(channels, channels, kernel_size=3, padding=1)
+        self.bn1 = nn.BatchNorm1d(channels)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv1d(channels, channels, kernel_size=3, padding=1)
+        self.bn2 = nn.BatchNorm1d(channels)
+
+    def forward(self, x):
+        identity = x
+        out = self.relu(self.bn1(self.conv1(x)))
+        out = self.bn2(self.conv2(out))
+        out += identity
+        out = self.relu(out)
+        return out
+
 class DualChannelCNN(nn.Module):
     def __init__(self):
         super(DualChannelCNN, self).__init__()
@@ -40,6 +57,9 @@ class DualChannelCNN(nn.Module):
         self.conv2_channel1 = nn.Conv1d(8, 16, kernel_size=3, padding=1)
         self.bn2_channel1 = nn.BatchNorm1d(16)
         self.pool2_channel1 = nn.MaxPool1d(kernel_size=2)
+        
+        # 通道1的残差块（加在conv2_channel1之后）
+        self.resblock_channel1 = ResidualBlock1D(16)
         
         # 通道1的注意力机制
         self.attention_channel1 = ChannelAttention(num_channels=16)
@@ -57,17 +77,19 @@ class DualChannelCNN(nn.Module):
         flattened_size = 16 * 150  # 输入长度为600，经过两次池化后变为150，再乘以通道数16
         
         # 共享全连接层
-        self.fc1 = nn.Linear(flattened_size * 2, 64)
-        self.bn_fc = nn.BatchNorm1d(64)
-        self.dropout = nn.Dropout(0.5)
-        self.fc2 = nn.Linear(64, 2)  # 输出2个标量
+        self.fc1 = nn.Linear(flattened_size * 2, 128)
+        self.bn_fc1 = nn.BatchNorm1d(128)
+        self.dropout1 = nn.Dropout(0.5)
+        self.fc2 = nn.Linear(128, 64)
+        self.bn_fc2 = nn.BatchNorm1d(64)
+        self.dropout2 = nn.Dropout(0.5)
+        self.fc3 = nn.Linear(64, 2)  # 输出2个标量
 
     def forward(self, x1, x2):
         # 通道1的特征提取
         x1 = self.pool1_channel1(F.relu(self.bn1_channel1(self.conv1_channel1(x1))))
         x1 = self.pool2_channel1(F.relu(self.bn2_channel1(self.conv2_channel1(x1))))
-        
-        # 应用注意力机制
+        x1 = self.resblock_channel1(x1)  # 残差块
         x1 = self.attention_channel1(x1)
         
         # 通道2的特征提取
@@ -81,10 +103,11 @@ class DualChannelCNN(nn.Module):
         # 拼接双通道特征
         x = torch.cat([x1, x2], dim=1)
         
-        # 共享全连接层
-        x = self.dropout(F.relu(self.bn_fc(self.fc1(x))))
-        x = self.fc2(x)
-        
+        # 3层全连接层
+        x = self.dropout1(F.relu(self.bn_fc1(self.fc1(x))))
+        x = self.dropout2(F.relu(self.bn_fc2(self.fc2(x))))
+        x = self.fc3(x)
+
         return x
 
 # This code is used for defining a dual-channel CNN model for training:
