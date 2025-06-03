@@ -317,3 +317,12 @@ Forward/backward pass size (MB): 0.52
 Forward/backward pass size (MB): 0.52
 Params size (MB): 2.39
 Estimated Total Size (MB): 4.28
+
+#### 训后笔记6
+
+1. 网络valloss回归跟正常trainloss相近
+2. 训练文件更改了test loss语句，训练时运行报错未定义
+3. 后续问一下AI如何针对loss2过大来进行一个操作
+4. 看是否需要调高学习率，感觉网络收敛很慢
+5. 下一版可以按照视频操作加入训练数据、标签的可视化
+6. 可以测试一下目前已经训出来的网络

@@ -182,6 +182,8 @@ if __name__ == "__main__":
     # 测试阶段
     model.eval()
     running_test_loss = 0.0
+    running_test_loss1 = 0.0
+    running_test_loss2 = 0.0
     with torch.no_grad():
         for clean, distorted, label in test_loader:
             clean, distorted, label = clean.to(device), distorted.to(device), label.to(device)
