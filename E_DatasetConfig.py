@@ -1,7 +1,7 @@
 # E_DatasetConfig.py
 # Author: QYH
-# Version: 1.1
-# Date: 2025/05/29
+# Version: 1.2
+# Date: 2025/06/09
 # This code is used for loading the dual-channel dataset for training:
 # curve dataset with dual channels and labels
 # All the index can be modified in 'A_fiber_index.py'

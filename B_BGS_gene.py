@@ -1,7 +1,7 @@
 # B_BGS_gene
 # Author: QYH
-# Version: 1.0
-# Date: 2025/04/21
+# Version: 1.2
+# Date: 2025/06/09
 # This code is the collection of BGS and pump distortion codes
 # All the index can be modified in 'A_fiber_index.py'
 
@@ -22,6 +22,15 @@ def lorentzian(x1, x0, gamma, a):
 
 #- 定义双峰洛伦兹函数
 def dual_lorentzian(x1, x00, gamma1, a1, x11, gamma2, a2):
+    """
+    x1: 输入数组
+    x00: 峰1的位置
+    gamma1: 峰1的半高全宽
+    A1: 峰1的幅度
+    x11: 峰2的位置
+    gamma2: 峰2的半高全宽
+    A2: 峰2的幅度
+    """
     dual_lorentzian_spectra=lorentzian(x1, x00, gamma1, a1)+lorentzian(x1, x11, gamma2, a2)
     return dual_lorentzian_spectra
 

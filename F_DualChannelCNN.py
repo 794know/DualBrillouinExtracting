@@ -1,7 +1,7 @@
 # F_DualChannelCNN.py
 # Author: QYH
-# Version: 1.1
-# Date: 2025/05/27
+# Version: 1.2
+# Date: 2025/06/09
 # This code is used for defining a dual-channel CNN model for training:
 # Model for processing dual-channel data (e.g., temperature and strain curves)
 # All the index can be modified in 'A_fiber_index.py'

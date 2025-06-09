@@ -1,7 +1,7 @@
 # G_TrainingProcessConfig.py
 # Author: QYH
-# Version: 1.1
-# Date: 2025/05/29
+# Version: 1.2
+# Date: 2025/06/09
 # This code is used for training the dual-channel CNN model:
 # curve dataset with dual channels and labels
 # All the index can be modified in 'A_fiber_index.py'
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     print("Model created and moved to device.")
     # 定义损失函数和优化器
     criterion = torch.nn.MSELoss()  # 均方误差损失，适用于回归任务
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.002)
 
     # 用于存储损失值以便可视化
     train_losses = []
@@ -72,11 +72,11 @@ if __name__ == "__main__":
     input("Press Enter to start training...")
 
     # 训练模型
-    num_epochs = 100  # 设置训练轮数
+    num_epochs = 100000  # 设置训练轮数
 
-    target_loss1 = 1  # 设置目标损失值1
-    target_loss2 = 1  # 设置目标损失值2
-    target_loss_total = 3  # 设置目标总损失值
+    target_loss1 = 2  # 设置目标损失值1
+    target_loss2 = 2  # 设置目标损失值2
+    target_loss_total = 4  # 设置目标总损失值
 
     total_start_time = time.time()  # 记录总训练时间的开始
     print(f"Starting training for {num_epochs} epochs...")
@@ -167,6 +167,11 @@ if __name__ == "__main__":
 
         if avg_val_loss <= target_loss_total:
             print(f'Reached target loss of {target_loss_total} at epoch {epoch+1}')
+            break
+
+        # 早停机制，如果验证损失在连续10个epoch内没有改善，则停止训练
+        if epoch > 0 and avg_val_loss >= val_losses[-2]:
+            print(f"Validation loss did not improve at epoch {epoch+1}, stopping training.")
             break
 
     # tensorboard writer 关闭
