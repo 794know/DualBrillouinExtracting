@@ -170,7 +170,7 @@ if __name__ == "__main__":
             break
 
         # 早停机制，如果验证损失在连续10个epoch内没有改善，则停止训练
-        if epoch > 0 and avg_val_loss >= val_losses[-2]:
+        if epoch > 30 and avg_val_loss >= val_losses[-2]:
             print(f"Validation loss did not improve at epoch {epoch+1}, stopping training.")
             break
 
