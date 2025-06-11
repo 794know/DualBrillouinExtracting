@@ -1,7 +1,7 @@
 # G_TrainingProcessConfig.py
 # Author: QYH
-# Version: 1.2
-# Date: 2025/06/09
+# Version: 2.0
+# Date: 2025/06/11
 # This code is used for training the dual-channel CNN model:
 # curve dataset with dual channels and labels
 # All the index can be modified in 'A_fiber_index.py'
@@ -10,8 +10,8 @@ import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
-from E_DatasetConfig import PumpPowerDataset
-from F_DualChannelCNN import DualChannelCNN
+from E_DatasetConfig import DataDBGS
+from F_DualPeakCNN_Dualparameters import DualPeakCNN
 import matplotlib
 matplotlib.use('Agg')  # 使用 Agg 后端，不显示图像
 import matplotlib.pyplot as plt
@@ -31,14 +31,12 @@ if __name__ == "__main__":
     # 数据集路径列表
     data_dirs = [
         "dataset_clean",
-        "dataset_SNR_6.0dB",
-        "dataset_SNR_9.0dB",
         "dataset_SNR_12.0dB",
         "dataset_SNR_15.0dB"
     ]
 
     # 创建数据集实例
-    dataset = PumpPowerDataset(data_dirs)
+    dataset = DataDBGS(data_dirs)
     print(f"Dataset size: {len(dataset)}")  # 输出数据集大小
 
     # 划分训练集、验证集和测试集
@@ -48,13 +46,13 @@ if __name__ == "__main__":
     train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
 
     # 创建数据加载器
-    batch_size = 256
+    batch_size = 32
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     # 创建模型实例并移至设备
-    model = DualChannelCNN().to(device)
+    model = DualPeakCNN().to(device)
     print("Model created and moved to device.")
     # 定义损失函数和优化器
     criterion = torch.nn.MSELoss()  # 均方误差损失，适用于回归任务
@@ -74,9 +72,9 @@ if __name__ == "__main__":
     # 训练模型
     num_epochs = 100000  # 设置训练轮数
 
-    target_loss1 = 2  # 设置目标损失值1
-    target_loss2 = 2  # 设置目标损失值2
-    target_loss_total = 4  # 设置目标总损失值
+    target_loss1 = 0  # 设置目标损失值1
+    target_loss2 = 0  # 设置目标损失值2
+    target_loss_total = 0  # 设置目标总损失值
 
     total_start_time = time.time()  # 记录总训练时间的开始
     print(f"Starting training for {num_epochs} epochs...")
@@ -87,22 +85,20 @@ if __name__ == "__main__":
         running_train_loss2 = 0.0
         epoch_start_time = time.time()  # 记录当前 epoch 的开始时间
         progress_bar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs}", unit="batch")
-        
-        for clean, distorted, label in progress_bar:
+
+        for clean, label in progress_bar:
             # 将数据移至设备
-            clean, distorted, label = clean.to(device), distorted.to(device), label.to(device)
+            clean, label = clean.to(device), label.to(device)
             print(f"Batch size: {clean.size(0)}")
             # 清除梯度
             optimizer.zero_grad()
             
             # 前向传播
-            output = model(clean, distorted)
-            
+            output = model(clean)
+
             # 分别计算两个标签的损失
             loss1 = criterion(output[:, 0], label[:, 0])
             loss2 = criterion(output[:, 1], label[:, 1])
-            loss1 = torch.sqrt(loss1)  # 对损失1取平方根
-            loss2 = torch.sqrt(loss2) * 0.05  # 对损失2取平方根
 
             # 计算总损失
             loss_total = loss1 + loss2
@@ -143,8 +139,6 @@ if __name__ == "__main__":
                 output = model(clean, distorted)
                 loss1 = criterion(output[:, 0], label[:, 0])
                 loss2 = criterion(output[:, 1], label[:, 1])
-                loss1 = torch.sqrt(loss1)  # 对损失1取平方根
-                loss2 = torch.sqrt(loss2) * 0.05  # 对损失2取平方根
                 loss_total = loss1 + loss2
                 running_val_loss += loss_total.item()
                 running_val_loss1 += loss1.item()
@@ -195,8 +189,6 @@ if __name__ == "__main__":
             output = model(clean, distorted)
             loss1 = criterion(output[:, 0], label[:, 0])
             loss2 = criterion(output[:, 1], label[:, 1])
-            loss1 = torch.sqrt(loss1)  # 对损失1取平方根
-            loss2 = torch.sqrt(loss2) * 0.05  # 对损失2取平方根
             loss_total = loss1 + loss2
             running_test_loss += loss_total.item()
             running_test_loss1 += loss1.item()
